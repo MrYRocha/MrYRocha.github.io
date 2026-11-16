@@ -1,3 +1,0 @@
-Test 1 | Accuracy: 100.0% | Total Time: 03:35
-Test 2 | Accuracy: 92.0% | Total Time: 02:30
-Test 3 | Accuracy: 100.0% | Total Time: 02:00
