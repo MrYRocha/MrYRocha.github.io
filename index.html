@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Treino Psicotécnico">
+    <title>Centro de Treino Psicotécnico — Seleção de Pilotos</title>
+    <style>
+        :root {
+            --bg-color: #080c14;
+            --panel-bg: #0f172a;
+            --card-bg: #1e293b;
+            --card-hover: #26354d;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 920px;
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .title-block h1 {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 0.4px;
+        }
+
+        .title-block p {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-top: 6px;
+        }
+
+        .badge {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.4);
+            color: #60a5fa;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 6px 12px;
+            border-radius: 999px;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 18px;
+        }
+
+        .game-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 22px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .game-card:hover {
+            transform: translateY(-4px);
+            background-color: var(--card-hover);
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 10px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+        }
+
+        .card-tag {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            text-transform: uppercase;
+            background: #0f172a;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-body h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .card-body p {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+            word-break: break-word;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #60a5fa;
+        }
+
+        .game-card:hover .card-footer {
+            color: #93c5fd;
+        }
+
+        .status-box {
+            text-align: center;
+            padding: 36px 20px;
+            background: #0b1120;
+            border: 1px dashed var(--border-color);
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+
+        .status-box.error {
+            border-color: rgba(239, 68, 68, 0.5);
+            color: #fca5a5;
+        }
+
+        .info-box {
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .info-box strong {
+            color: #e2e8f0;
+        }
+
+        .btn-refresh {
+            background: #1e293b;
+            color: #e2e8f0;
+            border: 1px solid #334155;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .btn-refresh:hover {
+            background: #334155;
+        }
+
+        code {
+            background: #1e293b;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <div class="title-block">
+                <h1>Simuladores de Aptidão Psicotécnica</h1>
+                <p>Deteção automática de módulos disponíveis no repositório</p>
+            </div>
+            <span class="badge" id="repoBadge">Auto-Sync GitHub</span>
+        </header>
+
+        <div id="contentArea">
+            <div class="status-box">A procurar ficheiros <code>.html</code> no repositório...</div>
+        </div>
+
+        <div class="info-box">
+            <div><strong>Zero Manutenção:</strong> Basta fazer upload de qualquer novo ficheiro <code>.html</code> para este repositório e ele aparecerá aqui automaticamente.</div>
+            <button class="btn-refresh" onclick="loadGames(true)">↻ Atualizar Lista</button>
+        </div>
+    </div>
+
+    <script>
+        // Metadados opcionais para ficheiros conhecidos (todos os novos ficheiros .html funcionam automaticamente sem estarem aqui)
+        const KNOWN_GAMES = {
+            'PistaEPedais.html': {
+                title: 'Pista e Pedais',
+                desc: 'Controlo de inibição e resposta rápida com os pedais (W / P) consoante o alinhamento da pista e barras transversais.',
+                icon: '🛬',
+                tag: 'PC & iPhone'
+            },
+            'Coordenacao_Parametros_Voo.html': {
+                title: 'Coordenação de Parâmetros de Voo',
+                desc: 'Multi-tasking simultâneo: acompanhamento de caixas F1–F8, rumo, velocidade, altitude PFD, bank angle e combustível.',
+                icon: '🎛️',
+                tag: 'Desktop / Teclado'
+            }
+        };
+
+        // Deduz automaticamente o utilizador e o repositório a partir do URL (ex: miguel.github.io ou miguel.github.io/repo)
+        function detectRepoInfo() {
+            const host = window.location.hostname; // ex: "username.github.io"
+            const pathParts = window.location.pathname.split('/').filter(Boolean);
+
+            if (host.endsWith('.github.io')) {
+                const owner = host.replace('.github.io', '');
+                // Se estiver na raiz de username.github.io, o repositório chama-se "username.github.io"
+                // Se estiver numa subpasta (ex: username.github.io/testes/), o repositório chama-se "testes"
+                const isProjectPage = pathParts.length > 0 && !pathParts[0].endsWith('.html');
+                const repo = isProjectPage ? pathParts[0] : host;
+                return { owner, repo };
+            }
+            return null;
+        }
+
+        // Converte nomes de ficheiros como "Teste_Memoria_Visual.html" em "Teste Memoria Visual"
+        function formatFileName(filename) {
+            return filename
+                .replace(/\.html$/i, '')
+                .replace(/[_-]+/g, ' ')
+                .replace(/([a-z])([A-Z])/g, '$1 $2')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // Tenta ler o <title> real de dentro do ficheiro HTML para dar um nome ainda mais limpo ao cartão
+        async function fetchHtmlTitle(filename) {
+            try {
+                const res = await fetch(filename);
+                if (!res.ok) return null;
+                const text = await res.text();
+                const match = text.match(/<title[^>]*>([^<]+)<\/title>/i);
+                return match && match[1] ? match[1].trim() : null;
+            } catch {
+                return null;
+            }
+        }
+
+        async function loadGames(bypassCache = false) {
+            const contentArea = document.getElementById('contentArea');
+            const repoBadge = document.getElementById('repoBadge');
+            const repoInfo = detectRepoInfo();
+
+            if (!repoInfo) {
+                contentArea.innerHTML = `
+                    <div class="status-box error">
+                        <strong>Modo Local Detetado:</strong> Este ficheiro deteta automaticamente os jogos quando estiver alojado no GitHub Pages (<code>username.github.io</code>).
+                    </div>`;
+                return;
+            }
+
+            repoBadge.textContent = `${repoInfo.owner}/${repoInfo.repo}`;
+            contentArea.innerHTML = `<div class="status-box">A sincronizar jogos de <code>${repoInfo.repo}</code>...</div>`;
+
+            try {
+                const apiUrl = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/` + (bypassCache ? `?t=${Date.now()}` : '');
+                const response = await fetch(apiUrl);
+
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP ${response.status}`);
+                }
+
+                const files = await response.json();
+
+                // Filtra apenas ficheiros .html na raiz, excluindo o próprio index.html e páginas 404.html
+                const htmlFiles = files
+                    .filter(f => f.type === 'file' && /\.html$/i.test(f.name) && f.name.toLowerCase() !== 'index.html' && f.name.toLowerCase() !== '404.html')
+                    .sort((a, b) => a.name.localeCompare(b.name));
+
+                if (htmlFiles.length === 0) {
+                    contentArea.innerHTML = `
+                        <div class="status-box">
+                            Nenhum jogo encontrado ainda.<br>
+                            Faz upload de qualquer ficheiro <code>.html</code> para a raiz do repositório <code>${repoInfo.repo}</code> e atualiza esta página.
+                        </div>`;
+                    return;
+                }
+
+                // Obtém os títulos reais de cada ficheiro HTML em paralelo
+                const cardsData = await Promise.all(htmlFiles.map(async (file, idx) => {
+                    const known = KNOWN_GAMES[file.name];
+                    if (known) {
+                        return {
+                            href: file.name,
+                            title: known.title,
+                            desc: known.desc,
+                            icon: known.icon,
+                            tag: known.tag
+                        };
+                    }
+
+                    const extractedTitle = await fetchHtmlTitle(file.name);
+                    return {
+                        href: file.name,
+                        title: extractedTitle || formatFileName(file.name),
+                        desc: `Ficheiro: ${file.name}`,
+                        icon: '✈️',
+                        tag: `Módulo ${idx + 1}`
+                    };
+                }));
+
+                const grid = document.createElement('div');
+                grid.className = 'games-grid';
+
+                cardsData.forEach(game => {
+                    const card = document.createElement('a');
+                    card.href = game.href;
+                    card.className = 'game-card';
+                    card.innerHTML = `
+                        <div>
+                            <div class="card-header">
+                                <div class="card-icon">${game.icon}</div>
+                                <span class="card-tag">${game.tag}</span>
+                            </div>
+                            <div class="card-body" style="margin-top: 14px;">
+                                <h2>${game.title}</h2>
+                                <p>${game.desc}</p>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <span>Abrir Simulador</span>
+                            <span>&rarr;</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                contentArea.innerHTML = '';
+                contentArea.appendChild(grid);
+
+            } catch (err) {
+                contentArea.innerHTML = `
+                    <div class="status-box error">
+                        <strong>Não foi possível listar automaticamente o repositório:</strong> ${err.message}<br>
+                        Verifica se o repositório <code>${repoInfo.repo}</code> está definido como <strong>Público</strong> nas definições do GitHub.
+                    </div>`;
+            }
+        }
+
+        loadGames();
+    </script>
+</body>
+</html>
