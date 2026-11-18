@@ -1143,7 +1143,7 @@
 
     <script>
         const STANDARD_DURATION_SEC = 900; // 15 minutos
-        const ARCADE_OMISSION_TIMEOUT_MS = 2000; // 2.0 segundos máximos sem input correto no Modo Arcade
+        const ARCADE_OMISSION_TIMEOUT_MS = 3000; // 3.0 segundos máximos sem input correto no Modo Arcade
 
         let gameMode = 'STANDARD';
         let activeStatsMode = 'STANDARD';
@@ -1199,7 +1199,7 @@
             driftDir: null
         };
 
-        // --- VARIÁVEIS DE VOO E TEMPORIZADORES DE OMISSÃO (2s NO ARCADE) ---
+        // --- VARIÁVEIS DE VOO E TEMPORIZADORES DE OMISSÃO (3s NO ARCADE) ---
         let speed = 250;
         let altitude = 20000;
         let targetAltitude = 20000;
@@ -1415,22 +1415,22 @@
 
             const now = Date.now();
 
-            // 1. Verificar timeouts de ausência de resposta (> 2.0 segundos sem input correto)
+            // 1. Verificar timeouts de ausência de resposta (> 3.0 segundos sem input correto)
             if (unaddressedSince.hdg && (now - unaddressedSince.hdg > ARCADE_OMISSION_TIMEOUT_MS)) {
                 const sector = getNearestNumpadSector(clover.x, clover.y) || clover.driftDir;
-                triggerGameOver(`Ausência de resposta no Rumo (HDG) por mais de 2,0s! O trevo derivou para ${sector}.`);
+                triggerGameOver(`Ausência de resposta no Rumo (HDG) por mais de 3,0s! O trevo derivou para ${sector}.`);
                 return true;
             }
             if (unaddressedSince.speed && (now - unaddressedSince.speed > ARCADE_OMISSION_TIMEOUT_MS)) {
-                triggerGameOver(`Ausência de resposta na Velocidade (${speed} kt) por mais de 2,0s!`);
+                triggerGameOver(`Ausência de resposta na Velocidade (${speed} kt) por mais de 3,0s!`);
                 return true;
             }
             if (unaddressedSince.altitude && (now - unaddressedSince.altitude > ARCADE_OMISSION_TIMEOUT_MS)) {
-                triggerGameOver(`Ausência de resposta na Altitude (${altitude} ft) por mais de 2,0s!`);
+                triggerGameOver(`Ausência de resposta na Altitude (${altitude} ft) por mais de 3,0s!`);
                 return true;
             }
             if (unaddressedSince.bank && (now - unaddressedSince.bank > ARCADE_OMISSION_TIMEOUT_MS)) {
-                triggerGameOver(`Ausência de resposta no Bank Angle (${bankAngle}°) por mais de 2,0s!`);
+                triggerGameOver(`Ausência de resposta no Bank Angle (${bankAngle}°) por mais de 3,0s!`);
                 return true;
             }
 
@@ -1518,7 +1518,7 @@
                 updateCloverVisuals();
             }
 
-            // 3. Movimento contínuo do objeto F1-F8 (com timeout de 2.0s por caixa no Arcade)
+            // 3. Movimento contínuo do objeto F1-F8 (com timeout de 3.0s por caixa no Arcade)
             if (activeObject) {
                 const elapsed = nowMs - activeObject.startTime;
                 const progress = elapsed / FULL_TRAVERSAL_MS;
@@ -1526,7 +1526,7 @@
                 if (gameMode === 'ARCADE' && !activeObject.validatedBoxes.has(activeObject.currentBox)) {
                     if (nowMs - activeObject.boxEnteredAt > ARCADE_OMISSION_TIMEOUT_MS) {
                         const expectedKey = expectedKeysMap[`${activeObject.color}_${activeObject.currentBox}`];
-                        triggerGameOver(`Ausência de resposta na Caixa ${activeObject.currentBox} por mais de 2,0s! Esperava-se a tecla ${expectedKey}.`);
+                        triggerGameOver(`Ausência de resposta na Caixa ${activeObject.currentBox} por mais de 3,0s! Esperava-se a tecla ${expectedKey}.`);
                         return;
                     }
                 }
