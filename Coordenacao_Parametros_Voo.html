@@ -126,6 +126,43 @@
             border-color: #60a5fa;
         }
 
+        .btn-pause {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-pause:hover:not(:disabled) {
+            background-color: #334155;
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        .btn-pause:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .btn-pause.paused-active {
+            background-color: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+            color: #fbbf24;
+        }
+
+        #pauseOverlay {
+            background: rgba(3, 7, 18, 0.94);
+            z-index: 18;
+        }
+
         /* Cockpit Instrument Grid Layout */
         .cockpit-grid {
             position: relative;
@@ -887,6 +924,9 @@
                         <div class="metric-value" id="scoreDisplay">0</div>
                     </div>
                 </div>
+                <button class="btn-pause" id="pauseBtn" disabled title="Pausar/Retomar o jogo (Tecla P)">
+                    ⏸ Pausa
+                </button>
                 <button class="btn-fullscreen" id="fullscreenBtn" title="Ativar/Desativar Ecrã Inteiro para bloquear F1-F8">
                     ⛶ Ecrã Inteiro
                 </button>
@@ -1027,7 +1067,7 @@
                         <li><strong>Altitude:</strong> A altitude não oscila sozinha, mas o <strong>Target</strong> (a verde na fita e no título) vai mudando. Usa <kbd>.</kbd> para subir (+100 ft) e <kbd>0</kbd> para descer (-100 ft) até ao novo Target. Input no sentido errado agrava o desvio!</li>
                         <li><strong>Bank Angle:</strong> <kbd>*</kbd> inclina/corrige para a direita (+15°); <kbd>/</kbd> inclina/corrige para a esquerda (-15°).</li>
                         <li><strong>Combustível:</strong> <kbd>ESPAÇO</kbd> alterna entre <strong>iniciar</strong> e <strong>parar</strong> o reabastecimento a qualquer momento (a barra fica vermelha abaixo de 20%; atenção para não encher em excesso nem parar cedo demais).</li>
-                        <li><strong>Modo Arcade (Sobrevivência):</strong> Tolerância zero nos controlos de voo (input errado ou ><strong>2,0 segundos</strong> sem resposta); no combustível dá <strong>Game Over</strong> apenas se chegar a <strong>0%</strong> ou ultrapassar <strong>100%</strong>.</li>
+                        <li><strong>Modo Arcade (Sobrevivência):</strong> Tolerância zero nos controlos de voo (input errado ou ><strong>3,0 segundos</strong> sem resposta); no combustível dá <strong>Game Over</strong> apenas se chegar a <strong>0%</strong> ou ultrapassar <strong>100%</strong>.</li>
                     </ul>
                     <p style="margin-top:8px; font-size:0.78rem; color:#60a5fa;">
                         💡 <strong>Dica:</strong> O jogo bloqueia automaticamente as funções do browser das teclas F1–F8, mas usa o botão <strong>Ecrã Inteiro</strong> para garantia máxima (especialmente contra o F6).
@@ -1037,6 +1077,16 @@
                     <button class="btn" id="startStandardBtn">Modo Standard (15 Min)</button>
                     <button class="btn btn-amber" id="startArcadeBtn">Modo Arcade (Sobrevivência)</button>
                     <button class="btn btn-secondary" id="statsBtn">Estatísticas & Ficheiro TXT</button>
+                </div>
+            </div>
+
+            <!-- Pause Overlay -->
+            <div id="pauseOverlay" class="overlay hidden">
+                <h2 style="color:#f59e0b;">Jogo em Pausa</h2>
+                <p style="color:#cbd5e1; margin-bottom:20px; font-size:0.95rem;">Todos os temporizadores e instrumentos estão congelados.</p>
+                <div class="btn-group">
+                    <button class="btn btn-amber" id="resumeBtn">▶ Retomar Voo</button>
+                    <button class="btn btn-outline" id="pauseMenuBtn">Voltar ao Menu Principal</button>
                 </div>
             </div>
 
@@ -1149,6 +1199,9 @@
         let activeStatsMode = 'STANDARD';
         let modalLockedToMode = false;
         let isRunning = false;
+        let isPaused = false;
+        let pausedAt = 0;
+        let nextEventDueAt = 0;
         let startTime = 0;
         let lastFrameTime = 0;
         let gameTimer = null;
@@ -1172,6 +1225,7 @@
         };
 
         const FULL_TRAVERSAL_MS = 9600;
+        const MIN_TRAVERSAL_MS = 4000; // Teto máximo: 1.0s por caixa (4 caixas = 4000ms)
         let activeObject = null;
 
         // --- FÍSICA CONTÍNUA DO TREVO NO ALVO CIRCULAR HDG ---
@@ -1189,6 +1243,7 @@
 
         const CLOVER_MAX_RADIUS_PX = 64;
         const CLOVER_DRIFT_SPEED = 0.24;
+        const CLOVER_MAX_DRIFT_SPEED = 0.50; // Teto máximo: 2.0s do centro (0) à borda (1.0)
         const CLOVER_IMPULSE_STEP = 0.48;
 
         let clover = {
@@ -1199,7 +1254,7 @@
             driftDir: null
         };
 
-        // --- VARIÁVEIS DE VOO E TEMPORIZADORES DE OMISSÃO (3s NO ARCADE) ---
+        // --- VARIÁVEIS DE VOO E TEMPORIZADORES DE OMISSÃO (2s NO ARCADE) ---
         let speed = 250;
         let altitude = 20000;
         let targetAltitude = 20000;
@@ -1227,6 +1282,8 @@
         const statsModal = document.getElementById('statsModal');
         const movingObjectEl = document.getElementById('movingObjectEl');
         const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const pauseOverlay = document.getElementById('pauseOverlay');
         const hdgCloverEl = document.getElementById('hdgClover');
         const altTapeStrip = document.getElementById('altTapeStrip');
         let chartInstance = null;
@@ -1348,6 +1405,12 @@
         });
 
         function resetCockpit() {
+            isPaused = false;
+            pausedAt = 0;
+            pauseOverlay.classList.add('hidden');
+            pauseBtn.classList.remove('paused-active');
+            pauseBtn.innerHTML = '⏸ Pausa';
+            pauseBtn.disabled = true;
             activeObject = null;
             movingObjectEl.classList.add('hidden');
             clover = { x: 0, y: 0, vx: 0, vy: 0, driftDir: null };
@@ -1415,7 +1478,7 @@
 
             const now = Date.now();
 
-            // 1. Verificar timeouts de ausência de resposta (> 3.0 segundos sem input correto)
+            // 1. Verificar timeouts de ausência de resposta (> 2.0 segundos sem input correto)
             if (unaddressedSince.hdg && (now - unaddressedSince.hdg > ARCADE_OMISSION_TIMEOUT_MS)) {
                 const sector = getNearestNumpadSector(clover.x, clover.y) || clover.driftDir;
                 triggerGameOver(`Ausência de resposta no Rumo (HDG) por mais de 3,0s! O trevo derivou para ${sector}.`);
@@ -1471,6 +1534,8 @@
 
             resetCockpit();
             isRunning = true;
+            isPaused = false;
+            pauseBtn.disabled = false;
             startTime = Date.now();
             lastFrameTime = performance.now();
 
@@ -1480,7 +1545,7 @@
         }
 
         function animationLoop(now) {
-            if (!isRunning) return;
+            if (!isRunning || isPaused) return;
 
             const dt = Math.min(0.1, (now - lastFrameTime) / 1000);
             lastFrameTime = now;
@@ -1521,7 +1586,7 @@
             // 3. Movimento contínuo do objeto F1-F8 (com timeout de 3.0s por caixa no Arcade)
             if (activeObject) {
                 const elapsed = nowMs - activeObject.startTime;
-                const progress = elapsed / FULL_TRAVERSAL_MS;
+                const progress = elapsed / (activeObject.traversalMs || FULL_TRAVERSAL_MS);
 
                 if (gameMode === 'ARCADE' && !activeObject.validatedBoxes.has(activeObject.currentBox)) {
                     if (nowMs - activeObject.boxEnteredAt > ARCADE_OMISSION_TIMEOUT_MS) {
@@ -1582,6 +1647,7 @@
         }
 
         function updateClock() {
+            if (!isRunning || isPaused) return;
             const elapsed = Math.floor((Date.now() - startTime) / 1000);
             const nowMs = Date.now();
 
@@ -1610,20 +1676,65 @@
             checkCriticalLimits();
         }
 
-        function scheduleNextEvent() {
-            if (!isRunning) return;
+        function scheduleNextEvent(skipTrigger = false) {
+            if (!isRunning || isPaused) return;
 
             const elapsedSec = (Date.now() - startTime) / 1000;
             let intervalMs = 3200;
 
             if (gameMode === 'STANDARD') {
-                intervalMs = Math.max(1100, 3200 - (elapsedSec / STANDARD_DURATION_SEC) * 2100);
+                intervalMs = Math.max(600, 3200 - (elapsedSec / STANDARD_DURATION_SEC) * 2600);
             } else {
-                intervalMs = Math.max(1100, 3600 - elapsedSec * 15);
+                intervalMs = Math.max(600, 3600 - elapsedSec * 15);
             }
 
-            triggerRandomDisturbance();
-            eventInterval = setTimeout(scheduleNextEvent, intervalMs);
+            if (!skipTrigger) {
+                triggerRandomDisturbance();
+                if (!isRunning) return;
+            }
+            nextEventDueAt = Date.now() + intervalMs;
+            eventInterval = setTimeout(() => scheduleNextEvent(false), intervalMs);
+        }
+
+        function togglePause() {
+            if (!isRunning) return;
+
+            if (!isPaused) {
+                isPaused = true;
+                pausedAt = Date.now();
+                clearInterval(gameTimer);
+                clearTimeout(eventInterval);
+                if (animFrameId) cancelAnimationFrame(animFrameId);
+
+                pauseBtn.classList.add('paused-active');
+                pauseBtn.innerHTML = '▶ Retomar';
+                pauseOverlay.classList.remove('hidden');
+            } else {
+                const pausedDuration = Date.now() - pausedAt;
+                startTime += pausedDuration;
+
+                if (activeObject) {
+                    activeObject.startTime += pausedDuration;
+                    activeObject.boxEnteredAt += pausedDuration;
+                }
+                if (unaddressedSince.hdg) unaddressedSince.hdg += pausedDuration;
+                if (unaddressedSince.speed) unaddressedSince.speed += pausedDuration;
+                if (unaddressedSince.altitude) unaddressedSince.altitude += pausedDuration;
+                if (unaddressedSince.bank) unaddressedSince.bank += pausedDuration;
+
+                isPaused = false;
+                pausedAt = 0;
+                lastFrameTime = performance.now();
+
+                pauseBtn.classList.remove('paused-active');
+                pauseBtn.innerHTML = '⏸ Pausa';
+                pauseOverlay.classList.add('hidden');
+
+                gameTimer = setInterval(updateClock, 100);
+                const remainingEventMs = Math.max(100, nextEventDueAt - (Date.now() - pausedDuration));
+                eventInterval = setTimeout(() => scheduleNextEvent(false), remainingEventMs);
+                animFrameId = requestAnimationFrame(animationLoop);
+            }
         }
 
         function triggerRandomDisturbance() {
@@ -1636,11 +1747,21 @@
                 const startLeft = Math.random() > 0.5;
                 const color = isGreen ? 'green' : 'yellow';
 
+                const elapsedSec = (nowMs - startTime) / 1000;
+                const progressRatio = gameMode === 'STANDARD'
+                    ? Math.min(1, elapsedSec / STANDARD_DURATION_SEC)
+                    : Math.min(1, elapsedSec / 200);
+                const currentTraversalMs = Math.max(
+                    MIN_TRAVERSAL_MS,
+                    FULL_TRAVERSAL_MS - progressRatio * (FULL_TRAVERSAL_MS - MIN_TRAVERSAL_MS)
+                );
+
                 activeObject = {
                     color: color,
                     direction: startLeft ? 1 : -1,
                     startTime: nowMs,
                     boxEnteredAt: nowMs,
+                    traversalMs: currentTraversalMs,
                     currentBox: startLeft ? 1 : 4,
                     validatedBoxes: new Set()
                 };
@@ -1648,13 +1769,21 @@
                 movingObjectEl.className = `moving-object ${color}`;
                 movingObjectEl.textContent = isGreen ? 'G' : 'Y';
                 movingObjectEl.style.left = startLeft ? '-2%' : '102%';
-            } else if (type === 1) {
+            } else if (type === 1 && clover.vx === 0 && clover.vy === 0) {
+                const elapsedSec = (nowMs - startTime) / 1000;
+                const progressRatio = gameMode === 'STANDARD'
+                    ? Math.min(1, elapsedSec / STANDARD_DURATION_SEC)
+                    : Math.min(1, elapsedSec / 200);
+                const currentDriftSpeed = Math.min(
+                    CLOVER_MAX_DRIFT_SPEED,
+                    CLOVER_DRIFT_SPEED + progressRatio * (CLOVER_MAX_DRIFT_SPEED - CLOVER_DRIFT_SPEED)
+                );
                 const dirs = [1, 2, 3, 4, 6, 7, 8, 9];
                 const dir = dirs[Math.floor(Math.random() * dirs.length)];
                 const vec = numpadVectors[dir];
                 clover.driftDir = dir;
-                clover.vx = vec.dx * CLOVER_DRIFT_SPEED;
-                clover.vy = vec.dy * CLOVER_DRIFT_SPEED;
+                clover.vx = vec.dx * currentDriftSpeed;
+                clover.vy = vec.dy * currentDriftSpeed;
                 if (!unaddressedSince.hdg) unaddressedSince.hdg = nowMs;
                 updateCloverVisuals();
             } else if (type === 2) {
@@ -1702,6 +1831,14 @@
             }
 
             if (!isRunning) return;
+
+            if (e.key.toLowerCase() === 'p') {
+                e.preventDefault();
+                togglePause();
+                return;
+            }
+
+            if (isPaused) return;
 
             let handled = false;
             const nowMs = Date.now();
@@ -1910,6 +2047,11 @@
 
         function triggerGameOver(reason) {
             isRunning = false;
+            isPaused = false;
+            pauseOverlay.classList.add('hidden');
+            pauseBtn.classList.remove('paused-active');
+            pauseBtn.innerHTML = '⏸ Pausa';
+            pauseBtn.disabled = true;
             clearInterval(gameTimer);
             clearTimeout(eventInterval);
             if (animFrameId) cancelAnimationFrame(animFrameId);
@@ -2269,6 +2411,9 @@
         document.getElementById('tabArcadeBtn').addEventListener('click', () => renderStatsForMode('ARCADE'));
         document.getElementById('closeModalBtn').addEventListener('click', () => statsModal.classList.add('hidden'));
         document.getElementById('mainMenuBtn').addEventListener('click', returnToMainMenu);
+        pauseBtn.addEventListener('click', togglePause);
+        document.getElementById('resumeBtn').addEventListener('click', togglePause);
+        document.getElementById('pauseMenuBtn').addEventListener('click', returnToMainMenu);
 
         document.getElementById('clearHistoryBtn').addEventListener('click', () => {
             const label = activeStatsMode === 'STANDARD' ? 'Standard' : 'Arcade';
