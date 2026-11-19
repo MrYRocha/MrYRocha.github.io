@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Abstract Figures &amp; Pattern Time-Trial Test</title>
+  <meta name="description" content="Abstract pattern &amp; sequence reasoning time-trial test: analyze 22 randomized figure sequences under timed conditions.">
+  <meta name="game-icon" content="🔷">
+  <meta name="game-tag" content="Desktop / Mouse &amp; Keyboard">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      user-select: none;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    /* Custom scrollbar for review table */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #64748b;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100">
+
+  <!-- Persistent Top Bar with Full Screen Button in Top-Left -->
+  <header class="w-full px-4 py-3 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between sticky top-0 z-40 backdrop-blur">
+    <div class="flex items-center gap-3">
+      <!-- Top-Left Full Screen Button (Always visible from start) -->
+      <button id="fullscreenBtn" type="button" onclick="toggleFullScreen()"
+        class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 active:bg-slate-600 text-slate-100 border border-slate-600 text-sm font-semibold shadow transition cursor-pointer"
+        title="Toggle Full Screen">
+        <svg id="fsIconEnter" class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        <svg id="fsIconExit" class="w-4 h-4 text-amber-400 hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 9L4 4m0 0v4m0-4h4m7 5l5-5m0 0v4m0-4h-4M9 15l-5 5m0 0v-4m0 4h4m7-5l5 5m0 0v-4m0 4h-4" />
+        </svg>
+        <span id="fsLabel">Full Screen</span>
+      </button>
+
+      <div class="hidden sm:flex items-center gap-2 pl-2 border-l border-slate-700">
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span class="font-bold tracking-wide text-sm text-slate-200">ABSTRACT FIGURES SIMULATOR</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <!-- Live Stopwatch & Progress during Test -->
+      <div id="headerTestStats" class="hidden flex items-center gap-4">
+        <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+          <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Progress</span>
+          <span id="headerProgress" class="mono font-bold text-sky-400 text-sm">1 / 22</span>
+        </div>
+        <div class="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path stroke-linecap="round" d="M12 7v5l3 2"></path>
+          </svg>
+          <span class="text-xs uppercase tracking-wider text-slate-400 font-semibold hidden md:inline">Time</span>
+          <span id="timerDisplay" class="mono font-bold text-amber-300 text-base">00:00</span>
+        </div>
+      </div>
+
+      <!-- Statistics Navigation Button (Visible outside active test) -->
+      <button id="headerStatsBtn" type="button" onclick="openStatsScreen()"
+        class="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-indigo-600/20 hover:bg-indigo-600/35 text-indigo-300 border border-indigo-500/40 text-sm font-semibold shadow transition cursor-pointer"
+        title="View Performance Statistics">
+        <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        </svg>
+        <span>Statistics</span>
+        <span id="headerSessionCount" class="mono text-xs px-1.5 py-0.5 rounded bg-indigo-500/30 text-indigo-200">0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Toast Notification Banner -->
+  <div id="toastBanner" class="fixed top-16 left-1/2 -translate-x-1/2 z-50 hidden px-5 py-2.5 rounded-xl bg-slate-800 border border-sky-500/60 text-slate-100 text-sm font-medium shadow-2xl transition-all"></div>
+
+  <!-- ========================================================= -->
+  <!-- SCREEN 1: START / BRIEFING SCREEN                         -->
+  <!-- ========================================================= -->
+  <main id="startScreen" class="flex-1 flex items-center justify-center p-4 sm:p-6">
+    <div class="max-w-4xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+      <div class="p-6 sm:p-8 bg-gradient-to-br from-slate-900 via-slate-900 to-sky-950/40 border-b border-slate-800">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/30 text-sky-400 text-xs font-semibold uppercase tracking-wider mb-3">
+          Psychometric Abstract Reasoning Assessment
+        </div>
+        <h1 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          Abstract Figures &amp; Sequences Time-Trial
+        </h1>
+        <p class="mt-2 text-slate-300 text-sm sm:text-base max-w-2xl">
+          Analyze 22 randomized visual pattern sequences under time-trial conditions. Identify the underlying logical transformation and select the missing figure (<span class="mono text-sky-300">1–5</span>).
+        </p>
+      </div>
+
+      <!-- Rules & Controls Summary -->
+      <div class="p-6 sm:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5">
+          <h2 class="text-sky-400 font-bold uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-sky-400"></span> Test Instructions
+          </h2>
+          <ol class="space-y-2.5 text-slate-300 list-decimal list-inside leading-relaxed">
+            <li>Examine the top row of frames from left to right to determine the sequential rule (rotations, reflections, element counts, additions/subtractions, or alternating steps).</li>
+            <li>Identify which of the 5 numbered figures (<span class="mono text-sky-300">1, 2, 3, 4, 5</span>) in the bottom row logically replaces the <span class="mono text-amber-300">?</span> symbol.</li>
+            <li>All 22 sequences (<span class="mono text-slate-200">a</span> through <span class="mono text-slate-200">v</span>) are shuffled randomly on every run.</li>
+            <li>Work quickly and accurately — both total completion time and percentage accuracy are recorded.</li>
+          </ol>
+        </div>
+
+        <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5 flex flex-col justify-between">
+          <div>
+            <h2 class="text-amber-400 font-bold uppercase tracking-wider text-xs mb-3 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span> Controls &amp; Shortcuts
+            </h2>
+            <ol class="space-y-2.5 text-slate-300 list-decimal list-inside leading-relaxed">
+              <li><strong>Mouse Selection:</strong> Click answer box <span class="mono text-slate-200">[1–5]</span> directly below the figure.</li>
+              <li><strong>Keyboard Shortcuts:</strong> Press keys <span class="mono text-sky-300">1</span> to <span class="mono text-sky-300">5</span> to select an answer, and <span class="mono text-slate-200">&larr;</span> / <span class="mono text-slate-200">&rarr;</span> arrow keys to switch items.</li>
+              <li><strong>Review Navigation:</strong> Jump directly to any question using the numbered pills in the bottom bar.</li>
+              <li><strong>Submit:</strong> Click <span class="mono text-rose-400">END</span> at any time to finalize the test and review detailed explanations.</li>
+            </ol>
+          </div>
+          <div class="mt-4 pt-3 border-t border-slate-800 text-xs text-slate-400">
+            Folder path: <span class="mono text-slate-200">Figures/&lt;letter&gt;_&lt;answer&gt;.png</span> (auto-loaded or manually selected).
+          </div>
+        </div>
+      </div>
+
+      <!-- Start & Import Actions -->
+      <div class="px-6 py-5 bg-slate-950/90 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+          <label class="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/40 text-sm font-semibold cursor-pointer transition">
+            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            <span id="loadImagesLabel">Checking Figures/ folder...</span>
+            <input type="file" id="imageFilesInput" accept="image/*" multiple class="hidden" onchange="handleLoadImages(event)" />
+          </label>
+
+          <label class="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-sm font-semibold cursor-pointer transition">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Import .TXT Result</span>
+            <input type="file" id="startImportInput" accept=".txt" multiple class="hidden" onchange="handleImportTxt(event)" />
+          </label>
+        </div>
+
+        <button type="button" onclick="startTest()"
+          class="w-full sm:w-auto px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-extrabold text-base shadow-lg shadow-emerald-500/20 transition cursor-pointer flex items-center justify-center gap-2">
+          <span>START TIME-TRIAL TEST</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- SCREEN 2: ACTIVE TEST SCENARIO SCREEN                     -->
+  <!-- ========================================================= -->
+  <main id="testScreen" class="hidden flex-1 flex flex-col items-center justify-center p-2 sm:p-4">
+    <div class="w-full max-w-5xl flex flex-col items-center gap-3">
+
+      <!-- Real Scenario Image Container -->
+      <div class="w-full bg-slate-900 rounded-xl shadow-2xl border-2 border-slate-700 overflow-hidden flex items-center justify-center p-1 sm:p-2">
+        <div class="w-full max-h-[66vh] relative flex items-center justify-center overflow-hidden rounded-lg bg-[#d8d3c2]">
+          <img
+            id="scenarioImage"
+            alt="Abstract Figure Sequence"
+            class="max-h-[65vh] w-auto max-w-full object-contain block select-none rounded hidden"
+            draggable="false"
+            onerror="if (typeof handleImageError === 'function') handleImageError(this);"
+          />
+          <div id="imageErrorFallback" class="hidden p-8 text-center text-slate-800">
+            <p class="font-bold text-base">Image file not found in <span class="mono text-sky-700">Figures/</span> folder.</p>
+            <p id="imageErrorFilename" class="mono text-sm text-rose-600 mt-1"></p>
+            <label class="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold cursor-pointer shadow transition">
+              <span>Select Images (Figures/a_2.png – v_3.png)</span>
+              <input type="file" accept="image/*" multiple class="hidden" onchange="handleLoadImages(event)" />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Selection Bar (1 to 5 boxes directly below the image) & Navigation -->
+      <div class="w-full bg-slate-900/95 border border-slate-800 rounded-xl px-4 py-3 flex flex-col lg:flex-row items-center justify-between gap-3 shadow-xl">
+        <div class="flex items-center gap-2 sm:gap-2.5">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Select Answer:</span>
+          <div id="answerBoxesContainer" class="flex items-center gap-2"></div>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-3 w-full lg:w-auto justify-between lg:justify-end">
+          <button id="prevBtn" type="button" onclick="prevQuestion()"
+            class="px-3.5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-base border border-slate-600 transition cursor-pointer flex items-center gap-1"
+            title="Previous Figure (Left Arrow)">
+            <span>&lt;</span>
+            <span class="text-xs font-semibold hidden sm:inline">PREV</span>
+          </button>
+
+          <!-- Quick Question Indicator Pills -->
+          <div id="questionDots" class="flex items-center gap-1 flex-wrap justify-center max-w-md"></div>
+
+          <button id="nextBtn" type="button" onclick="nextQuestion()"
+            class="px-3.5 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none text-white font-bold text-base border border-slate-600 transition cursor-pointer flex items-center gap-1"
+            title="Next Figure (Right Arrow)">
+            <span class="text-xs font-semibold hidden sm:inline">NEXT</span>
+            <span>&gt;</span>
+          </button>
+
+          <button id="endBtn" type="button" onclick="requestEndTest()"
+            class="ml-1 px-5 py-2.5 rounded-lg bg-rose-600 hover:bg-rose-500 active:bg-rose-700 text-white font-extrabold text-sm tracking-wider uppercase shadow-lg shadow-rose-600/25 border border-rose-400/40 transition cursor-pointer">
+            END
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Custom Confirmation Modal for Submitting Early -->
+  <div id="confirmEndModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <h3 class="text-lg font-bold text-white">Submit All Answers?</h3>
+      <p id="confirmEndText" class="mt-2 text-sm text-slate-300 leading-relaxed"></p>
+      <div class="mt-6 flex items-center justify-end gap-3">
+        <button type="button" onclick="closeConfirmModal()"
+          class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-semibold border border-slate-600 cursor-pointer">
+          Continue Test
+        </button>
+        <button type="button" onclick="finishTest()"
+          class="px-5 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-sm font-extrabold cursor-pointer">
+          Submit &amp; View Results
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- SCREEN 3: RESULTS & TXT EXPORT / IMPORT SCREEN            -->
+  <!-- ========================================================= -->
+  <main id="resultsScreen" class="hidden flex-1 flex items-center justify-center p-4 sm:p-6">
+    <div class="max-w-5xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+      
+      <!-- Results Header Banner -->
+      <div class="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/30 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span id="resultSourceBadge" class="inline-block px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider mb-2">
+            Completed Session Results
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Test Performance Summary</h2>
+          <p id="resultTimestamp" class="text-xs text-slate-400 mt-1 mono"></p>
+        </div>
+
+        <!-- Export / Import / Restart Buttons -->
+        <div class="flex flex-wrap items-center gap-2.5">
+          <button type="button" onclick="exportAllHistoryTxt()"
+            class="px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm flex items-center gap-2 shadow transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Export All History (.TXT)</span>
+          </button>
+
+          <label class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 font-semibold text-sm flex items-center gap-2 cursor-pointer transition">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Import .TXT</span>
+            <input type="file" id="resultsImportInput" accept=".txt" multiple class="hidden" onchange="handleImportTxt(event)" />
+          </label>
+
+          <button type="button" onclick="openStatsScreen()"
+            class="px-4 py-2.5 rounded-xl bg-indigo-600/25 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/40 font-semibold text-sm flex items-center gap-2 shadow transition cursor-pointer">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>View Statistics</span>
+          </button>
+
+          <button type="button" onclick="startTest()"
+            class="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm flex items-center gap-2 shadow transition cursor-pointer">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span>New Random Run</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Key Metrics Cards -->
+      <div class="p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 border-b border-slate-800 bg-slate-950/50">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Correct Answers (%)</span>
+          <span id="statAccuracy" class="mt-2 text-3xl sm:text-4xl font-extrabold text-emerald-400 mono">0%</span>
+          <span id="statFraction" class="mt-1 text-xs text-slate-400">0 out of 22 correct</span>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Test Time</span>
+          <span id="statTotalTime" class="mt-2 text-3xl sm:text-4xl font-extrabold text-amber-300 mono">00:00</span>
+          <span id="statAvgTime" class="mt-1 text-xs text-slate-400">Avg: 0.0s per item</span>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 flex flex-col">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Performance Rating</span>
+          <span id="statRating" class="mt-2 text-2xl sm:text-3xl font-extrabold text-sky-400">--</span>
+          <span class="mt-1 text-xs text-slate-400">Based on accuracy &amp; speed</span>
+        </div>
+      </div>
+
+      <!-- Detailed Item-by-Item Breakdown Table -->
+      <div class="p-6">
+        <h3 class="text-sm font-bold uppercase tracking-wider text-slate-300 mb-3">Figure Sequence Breakdown</h3>
+        <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-80">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-950 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                <th class="py-3 px-4">#</th>
+                <th class="py-3 px-4">Preview</th>
+                <th class="py-3 px-4">Figure</th>
+                <th class="py-3 px-4">Your Choice</th>
+                <th class="py-3 px-4">Correct Choice</th>
+                <th class="py-3 px-4">Status</th>
+                <th class="py-3 px-4">Pattern Logic</th>
+              </tr>
+            </thead>
+            <tbody id="resultsTableBody" class="divide-y divide-slate-800/80 bg-slate-900/60">
+              <!-- Rows injected dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- SCREEN 4: CUMULATIVE STATISTICS & ANALYTICS SCREEN        -->
+  <!-- ========================================================= -->
+  <main id="statsScreen" class="hidden flex-1 flex items-center justify-center p-4 sm:p-6">
+    <div class="max-w-5xl w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden">
+
+      <!-- Statistics Header -->
+      <div class="p-6 sm:p-8 bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border-b border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <span class="inline-block px-3 py-1 rounded-full bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-2">
+            Performance Analytics
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Cumulative Statistics</h2>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Aggregated metrics from all completed sessions and imported <span class="mono text-slate-300">.TXT</span> reports.
+          </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+          <label class="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-600 font-semibold text-sm flex items-center gap-2 cursor-pointer transition">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+            <span>Import .TXT Files</span>
+            <input type="file" accept=".txt" multiple class="hidden" onchange="handleImportTxt(event, true)" />
+          </label>
+
+          <button type="button" onclick="clearStatsHistory()"
+            class="px-4 py-2.5 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 font-semibold text-sm transition cursor-pointer">
+            Reset History
+          </button>
+
+          <button type="button" onclick="returnFromStats()"
+            class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow transition cursor-pointer">
+            Back
+          </button>
+        </div>
+      </div>
+
+      <!-- Empty State -->
+      <div id="statsEmptyState" class="p-12 text-center">
+        <div class="w-14 h-14 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mx-auto mb-4 text-indigo-400">
+          <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          </svg>
+        </div>
+        <h3 class="text-lg font-bold text-white">No Recorded Runs Yet</h3>
+        <p class="mt-1 text-sm text-slate-400 max-w-md mx-auto">
+          Complete a time-trial test or import one or more previously saved <span class="mono text-slate-200">.TXT</span> result files to view your accuracy trends and weakest figures.
+        </p>
+        <div class="mt-6 flex items-center justify-center gap-3">
+          <button type="button" onclick="startTest()"
+            class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm shadow cursor-pointer">
+            Start New Test
+          </button>
+        </div>
+      </div>
+
+      <!-- Populated Statistics Content -->
+      <div id="statsContent" class="hidden">
+        <!-- Top KPI Summary Cards -->
+        <div class="p-6 grid grid-cols-2 lg:grid-cols-4 gap-4 border-b border-slate-800 bg-slate-950/50">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Runs</span>
+            <div id="kpiTotalRuns" class="mt-1.5 text-3xl font-extrabold text-white mono">0</div>
+            <span id="kpiTotalItems" class="text-xs text-slate-400">0 figures evaluated</span>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Average Accuracy</span>
+            <div id="kpiAvgAccuracy" class="mt-1.5 text-3xl font-extrabold text-emerald-400 mono">0%</div>
+            <span id="kpiBestAccuracy" class="text-xs text-slate-400">Best: 0%</span>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Average Total Time</span>
+            <div id="kpiAvgTime" class="mt-1.5 text-3xl font-extrabold text-amber-300 mono">00:00</div>
+            <span id="kpiFastestTime" class="text-xs text-slate-400">Fastest: 00:00</span>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Avg Speed / Item</span>
+            <div id="kpiAvgPerItem" class="mt-1.5 text-3xl font-extrabold text-sky-400 mono">0.0s</div>
+            <span id="kpiWeakestItem" class="text-xs text-slate-400">Focus area: --</span>
+          </div>
+        </div>
+
+        <!-- Run History Trend Bars & Per-Item Accuracy -->
+        <div class="p-6 grid grid-cols-1 lg:grid-cols-2 gap-6 border-b border-slate-800">
+          <!-- Session History Chart -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-300">Session Accuracy &amp; Time History</h3>
+              <span class="text-xs text-slate-500">Oldest &rarr; Latest</span>
+            </div>
+            <div id="sessionHistoryList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+          </div>
+
+          <!-- Per-Figure Accuracy Breakdown (Figures a - v) -->
+          <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-sky-300">Accuracy by Figure (a – v)</h3>
+              <span class="text-xs text-slate-500">Sorted lowest &rarr; highest</span>
+            </div>
+            <div id="itemStatsList" class="space-y-2.5 max-h-64 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    // Official Answer Key & Pattern Explanations for all 22 Figure Sequences (Figures/<letter>_<answer>.png)
+    const TEST_ITEMS = [
+      {
+        id: 'a',
+        fileName: 'a_2.png',
+        imageSrc: 'Figures/a_2.png',
+        correctAnswer: 2,
+        rationale: 'Inner square removes 1 dot per step (4 -> 3 -> 2 -> 1 -> 0 dots), leaving an empty inner square.'
+      },
+      {
+        id: 'b',
+        fileName: 'b_4.png',
+        imageSrc: 'Figures/b_4.png',
+        correctAnswer: 4,
+        rationale: 'The two parallel segments rotate 45° clockwise each step, returning to the initial diagonal position.'
+      },
+      {
+        id: 'c',
+        fileName: 'c_1.png',
+        imageSrc: 'Figures/c_1.png',
+        correctAnswer: 1,
+        rationale: 'Black squares are added clockwise (top, right, bottom, left) around the central hollow square; next adds a second square on top.'
+      },
+      {
+        id: 'd',
+        fileName: 'd_3.png',
+        imageSrc: 'Figures/d_3.png',
+        correctAnswer: 3,
+        rationale: 'The top horizontal bar steps downward by one level per frame while trimming the vertical walls above it.'
+      },
+      {
+        id: 'e',
+        fileName: 'e_3.png',
+        imageSrc: 'Figures/e_3.png',
+        correctAnswer: 3,
+        rationale: 'The dark crescent shrinks progressively from left to right across the circle, leaving a thin right-side crescent.'
+      },
+      {
+        id: 'f',
+        fileName: 'f_2.png',
+        imageSrc: 'Figures/f_2.png',
+        correctAnswer: 2,
+        rationale: 'A continuous serpentine line snakes downward by adding one horizontal pass per frame from left to right.'
+      },
+      {
+        id: 'g',
+        fileName: 'g_4.png',
+        imageSrc: 'Figures/g_4.png',
+        correctAnswer: 4,
+        rationale: 'Alternates horizontal and vertical orientations while adding a dumbbell bar every two steps (1H, 1V, 2H, 2V -> 3H).'
+      },
+      {
+        id: 'h',
+        fileName: 'h_4.png',
+        imageSrc: 'Figures/h_4.png',
+        correctAnswer: 4,
+        rationale: 'Inner diameter alternates vertical/horizontal while the external tick steps 90° counter-clockwise per frame.'
+      },
+      {
+        id: 'i',
+        fileName: 'i_5.png',
+        imageSrc: 'Figures/i_5.png',
+        correctAnswer: 5,
+        rationale: 'Both small squares advance one corner clockwise each step, returning to their starting top corners on step 5.'
+      },
+      {
+        id: 'j',
+        fileName: 'j_4.png',
+        imageSrc: 'Figures/j_4.png',
+        correctAnswer: 4,
+        rationale: 'The double-arch shape with its end block rotates 90° clockwise each step, completing a full 360° turn.'
+      },
+      {
+        id: 'k',
+        fileName: 'k_2.png',
+        imageSrc: 'Figures/k_2.png',
+        correctAnswer: 2,
+        rationale: 'Smooth wave curve adds half a cycle per step while alternating its terminal orientation.'
+      },
+      {
+        id: 'l',
+        fileName: 'l_3.png',
+        imageSrc: 'Figures/l_3.png',
+        correctAnswer: 3,
+        rationale: 'The pair of brackets rotates 90° clockwise each frame while gaining one terminal black square per step (0 -> 1 -> 2 -> 3 -> 4).'
+      },
+      {
+        id: 'm',
+        fileName: 'm_2.png',
+        imageSrc: 'Figures/m_2.png',
+        correctAnswer: 2,
+        rationale: 'Diagonal slashes are added clockwise around the four corners (1 -> 3 -> 5 -> 7 -> 8 slashes, forming four pairs).'
+      },
+      {
+        id: 'n',
+        fileName: 'n_5.png',
+        imageSrc: 'Figures/n_5.png',
+        correctAnswer: 5,
+        rationale: 'Odd steps show connected double-headed arrows (1, 2 -> 3 arrows) while even steps show detached arrowheads.'
+      },
+      {
+        id: 'o',
+        fileName: 'o_3.png',
+        imageSrc: 'Figures/o_3.png',
+        correctAnswer: 3,
+        rationale: 'The pair of shaded triangles rotates 45°/90° around the four compass points, returning to top and bottom.'
+      },
+      {
+        id: 'p',
+        fileName: 'p_3.png',
+        imageSrc: 'Figures/p_3.png',
+        correctAnswer: 3,
+        rationale: 'Each visible die face decreases its pip count systematically across the sequence (top: 3->6->4->1, front: 3->3->3->4, right: 6->4->2->2).'
+      },
+      {
+        id: 'q',
+        fileName: 'q_5.png',
+        imageSrc: 'Figures/q_5.png',
+        correctAnswer: 5,
+        rationale: 'The stepped L-bars shift inward and overlap progressively, with the right-hand vertical segment turning downward on step 5.'
+      },
+      {
+        id: 'r',
+        fileName: 'r_2.png',
+        imageSrc: 'Figures/r_2.png',
+        correctAnswer: 2,
+        rationale: 'Dot grid doubles in size each step: 2 (1x2) -> 4 (2x2) -> 8 (4x2) -> 16 (4x4) -> 32 dots (4 columns of 8).'
+      },
+      {
+        id: 's',
+        fileName: 's_3.png',
+        imageSrc: 'Figures/s_3.png',
+        correctAnswer: 3,
+        rationale: 'Total dots follow +1, +2, +4, +8 (2 -> 3 -> 5 -> 9 -> 17 dots, arranged as columns of 5, 4, 4, 4).'
+      },
+      {
+        id: 't',
+        fileName: 't_1.png',
+        imageSrc: 'Figures/t_1.png',
+        correctAnswer: 1,
+        rationale: 'The semicircle grows larger and gains a denser internal fill texture at each step.'
+      },
+      {
+        id: 'u',
+        fileName: 'u_5.png',
+        imageSrc: 'Figures/u_5.png',
+        correctAnswer: 5,
+        rationale: 'Line segments are added sequentially to build nested concentric triangles from the outside inward.'
+      },
+      {
+        id: 'v',
+        fileName: 'v_3.png',
+        imageSrc: 'Figures/v_3.png',
+        correctAnswer: 3,
+        rationale: 'Shapes layer concentrically from inside out (circle -> triangle -> circle -> inverted triangle -> outer circle enclosing inverted triangle).'
+      }
+    ];
+
+    const STORAGE_KEY = 'figures_reasoning_session_history_v1';
+
+    // Game State
+    let shuffledItems = [];
+    let currentIndex = 0;
+    let userAnswers = []; // Array of selected choice numbers (1..5) or null
+    let timerInterval = null;
+    let startTimeMs = 0;
+    let elapsedSeconds = 0;
+    let lastReportData = null;
+    let sessionHistory = [];
+    let previousScreenId = 'startScreen';
+    const uploadedImageUrls = {};
+    const resolvedImageUrls = {};
+    const autoDetectedIds = new Set();
+
+    /**
+     * Load persisted statistics from localStorage safely
+     */
+    function loadPersistedHistory() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            sessionHistory = parsed;
+          }
+        }
+      } catch (e) {
+        // Ignore storage errors in restricted environments
+      }
+      const badge = document.getElementById('headerSessionCount');
+      if (badge) badge.textContent = sessionHistory.length;
+    }
+
+    /**
+     * Save statistics history to localStorage safely
+     */
+    function savePersistedHistory() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionHistory));
+      } catch (e) {
+        // Ignore storage quota or sandbox restrictions
+      }
+    }
+
+    /**
+     * Probe Figures/<letter>_<1..5>.(png|PNG) in parallel so renaming any file
+     * automatically updates both the image path and the item's correctAnswer.
+     */
+    function probeItemFromFolder(item) {
+      return new Promise(resolve => {
+        // Test default answer first for instant hit, then all other choices 1..5
+        const orderedChoices = [item.correctAnswer, ...[1, 2, 3, 4, 5].filter(n => n !== item.correctAnswer)];
+        const candidates = [];
+        orderedChoices.forEach(num => {
+          candidates.push({ num, fileName: `${item.id}_${num}.png`, path: `Figures/${item.id}_${num}.png` });
+          candidates.push({ num, fileName: `${item.id}_${num}.PNG`, path: `Figures/${item.id}_${num}.PNG` });
+        });
+
+        let idx = 0;
+        function tryNext() {
+          if (idx >= candidates.length) {
+            resolve(false);
+            return;
+          }
+          const cand = candidates[idx++];
+          const img = new Image();
+          img.onload = () => {
+            item.correctAnswer = cand.num;
+            item.fileName = cand.fileName;
+            item.imageSrc = cand.path;
+            resolvedImageUrls[item.id] = cand.path;
+            autoDetectedIds.add(item.id);
+            resolve(true);
+          };
+          img.onerror = tryNext;
+          img.src = cand.path;
+        }
+        tryNext();
+      });
+    }
+
+    function preloadDataFolderImages() {
+      let checkedCount = 0;
+      TEST_ITEMS.forEach(item => {
+        probeItemFromFolder(item).then(() => {
+          checkedCount++;
+          updateImageAvailabilityLabel(checkedCount);
+        });
+      });
+    }
+
+    function updateImageAvailabilityLabel(checkedCount) {
+      const label = document.getElementById('loadImagesLabel');
+      if (!label) return;
+      const availableCount = new Set([
+        ...autoDetectedIds,
+        ...Object.keys(uploadedImageUrls)
+      ]).size;
+
+      if (availableCount === TEST_ITEMS.length) {
+        label.textContent = `Auto-loaded 22/22 images from Figures/ folder`;
+      } else if (checkedCount >= TEST_ITEMS.length) {
+        label.textContent = availableCount > 0
+          ? `${availableCount}/22 found in Figures/ (Select missing)`
+          : `Select Images (Figures/<letter>_<1-5>.png)`;
+      }
+    }
+
+    /**
+     * Allow manual batch loading of image files (<letter>_<1-5>.png) and automatically
+     * override each item's correctAnswer and fileName from the loaded filename.
+     */
+    function handleLoadImages(event) {
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) return;
+
+      let matchedCount = 0;
+      files.forEach(file => {
+        const match = file.name.match(/^([a-vA-V])_([1-5])\.(png|jpg|jpeg|webp)$/i);
+        if (match) {
+          const letter = match[1].toLowerCase();
+          const detectedAnswer = parseInt(match[2], 10);
+          const item = TEST_ITEMS.find(i => i.id === letter);
+          if (item) {
+            item.correctAnswer = detectedAnswer;
+            item.fileName = file.name;
+            item.imageSrc = `Figures/${file.name}`;
+            uploadedImageUrls[letter] = URL.createObjectURL(file);
+            matchedCount++;
+          }
+        }
+      });
+
+      event.target.value = '';
+      updateImageAvailabilityLabel(TEST_ITEMS.length);
+
+      if (matchedCount > 0) {
+        showToast(`Loaded ${matchedCount} figure image${matchedCount > 1 ? 's' : ''} (answer keys synced from filenames).`);
+        if (!document.getElementById('testScreen').classList.contains('hidden')) {
+          renderCurrentScenario();
+        }
+      } else {
+        showToast('No matching <letter>_<1-5>.png files found.');
+      }
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      const isFs = Boolean(document.fullscreenElement);
+      const enterIcon = document.getElementById('fsIconEnter');
+      const exitIcon = document.getElementById('fsIconExit');
+      const label = document.getElementById('fsLabel');
+      if (enterIcon && exitIcon && label) {
+        enterIcon.classList.toggle('hidden', isFs);
+        exitIcon.classList.toggle('hidden', !isFs);
+        label.textContent = isFs ? 'Exit Full Screen' : 'Full Screen';
+      }
+    });
+
+    /**
+     * Non-blocking Toast Banner Notification
+     */
+    let toastTimeout = null;
+    function showToast(message) {
+      const banner = document.getElementById('toastBanner');
+      if (!banner) return;
+      banner.textContent = message;
+      banner.classList.remove('hidden');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        banner.classList.add('hidden');
+      }, 3200);
+    }
+
+    /**
+     * Format seconds into MM:SS
+     */
+    function formatTime(totalSec) {
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    /**
+     * Fisher-Yates Array Shuffle
+     */
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    /**
+     * Record a report into sessionHistory (deduplicating identical imports)
+     */
+    function recordSessionReport(report) {
+      const signature = `${report.timestamp}|${report.accuracyPct}|${report.totalSeconds}`;
+      const exists = sessionHistory.some(
+        r => `${r.timestamp}|${r.accuracyPct}|${r.totalSeconds}` === signature
+      );
+      if (!exists) {
+        sessionHistory.push(report);
+        savePersistedHistory();
+      }
+      const badge = document.getElementById('headerSessionCount');
+      if (badge) badge.textContent = sessionHistory.length;
+    }
+
+    /**
+     * Open the Cumulative Statistics Screen
+     */
+    function openStatsScreen() {
+      if (!document.getElementById('testScreen').classList.contains('hidden')) {
+        showToast('Finish or submit the current test before viewing Statistics.');
+        return;
+      }
+      if (!document.getElementById('resultsScreen').classList.contains('hidden')) {
+        previousScreenId = 'resultsScreen';
+      } else if (!document.getElementById('startScreen').classList.contains('hidden')) {
+        previousScreenId = 'startScreen';
+      }
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('testScreen').classList.add('hidden');
+      document.getElementById('resultsScreen').classList.add('hidden');
+      document.getElementById('headerTestStats').classList.add('hidden');
+      document.getElementById('statsScreen').classList.remove('hidden');
+
+      renderStatisticsScreen();
+    }
+
+    /**
+     * Return from Statistics Screen to the previous screen
+     */
+    function returnFromStats() {
+      document.getElementById('statsScreen').classList.add('hidden');
+      document.getElementById(previousScreenId).classList.remove('hidden');
+    }
+
+    /**
+     * Clear recorded statistics history
+     */
+    function clearStatsHistory() {
+      sessionHistory = [];
+      savePersistedHistory();
+      const badge = document.getElementById('headerSessionCount');
+      if (badge) badge.textContent = '0';
+      renderStatisticsScreen();
+      showToast('Session statistics history cleared.');
+    }
+
+    /**
+     * Render all KPIs, session history bars, and per-item accuracy metrics
+     */
+    function renderStatisticsScreen() {
+      const emptyEl = document.getElementById('statsEmptyState');
+      const contentEl = document.getElementById('statsContent');
+
+      if (!sessionHistory || sessionHistory.length === 0) {
+        emptyEl.classList.remove('hidden');
+        contentEl.classList.add('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      contentEl.classList.remove('hidden');
+
+      const totalRuns = sessionHistory.length;
+      const totalItemsEvaluated = sessionHistory.reduce((acc, r) => acc + (r.totalItems || TEST_ITEMS.length), 0);
+      const avgAccuracy = (
+        sessionHistory.reduce((acc, r) => acc + Number(r.accuracyPct), 0) / totalRuns
+      ).toFixed(1);
+      const bestAccuracy = Math.max(...sessionHistory.map(r => Number(r.accuracyPct))).toFixed(1);
+
+      const avgSeconds = Math.round(
+        sessionHistory.reduce((acc, r) => acc + r.totalSeconds, 0) / totalRuns
+      );
+      const fastestSeconds = Math.min(...sessionHistory.map(r => r.totalSeconds));
+      const avgSecPerItem = totalItemsEvaluated > 0
+        ? (sessionHistory.reduce((acc, r) => acc + r.totalSeconds, 0) / totalItemsEvaluated).toFixed(1)
+        : '0.0';
+
+      document.getElementById('kpiTotalRuns').textContent = totalRuns;
+      document.getElementById('kpiTotalItems').textContent = `${totalItemsEvaluated} figures evaluated`;
+      document.getElementById('kpiAvgAccuracy').textContent = `${avgAccuracy}%`;
+      document.getElementById('kpiBestAccuracy').textContent = `Best: ${bestAccuracy}%`;
+      document.getElementById('kpiAvgTime').textContent = formatTime(avgSeconds);
+      document.getElementById('kpiFastestTime').textContent = `Fastest: ${formatTime(fastestSeconds)}`;
+      document.getElementById('kpiAvgPerItem').textContent = `${avgSecPerItem}s`;
+
+      // Render Session History List
+      const historyContainer = document.getElementById('sessionHistoryList');
+      historyContainer.innerHTML = '';
+      sessionHistory.forEach((run, idx) => {
+        const pctVal = Number(run.accuracyPct);
+        const barColor =
+          pctVal >= 80 ? 'bg-emerald-500' :
+          pctVal >= 60 ? 'bg-amber-400' : 'bg-rose-500';
+        const row = document.createElement('div');
+        row.className = 'bg-slate-900 border border-slate-800 rounded-lg p-3';
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs mb-1.5">
+            <span class="font-bold text-slate-200">Test ${idx + 1} <span class="text-slate-500 font-normal ml-1">${run.timestamp || ''}</span></span>
+            <div class="flex items-center gap-3 mono">
+              <span class="text-amber-300 font-semibold">${run.formattedTotalTime}</span>
+              <span class="text-emerald-400 font-extrabold">${pctVal.toFixed(1)}%</span>
+            </div>
+          </div>
+          <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div class="${barColor} h-full rounded-full transition-all" style="width: ${pctVal}%"></div>
+          </div>
+        `;
+        historyContainer.appendChild(row);
+      });
+
+      // Aggregate Per-Figure Performance across runs that include details
+      const itemMap = {};
+      TEST_ITEMS.forEach(item => {
+        itemMap[item.id] = { id: item.id, fileName: item.fileName, attempts: 0, correct: 0 };
+      });
+
+      sessionHistory.forEach(run => {
+        if (Array.isArray(run.details)) {
+          run.details.forEach(d => {
+            const key = String(d.itemId).toLowerCase();
+            if (itemMap[key]) {
+              itemMap[key].attempts++;
+              if (d.isCorrect) itemMap[key].correct++;
+            }
+          });
+        }
+      });
+
+      const itemStatsArray = Object.values(itemMap).map(entry => ({
+        ...entry,
+        pct: entry.attempts > 0 ? Math.round((entry.correct / entry.attempts) * 100) : null
+      }));
+
+      // Sort items with attempts from lowest accuracy to highest, followed by unattempted items
+      itemStatsArray.sort((a, b) => {
+        if (a.pct === null && b.pct === null) return a.id.localeCompare(b.id);
+        if (a.pct === null) return 1;
+        if (b.pct === null) return -1;
+        return a.pct - b.pct || a.id.localeCompare(b.id);
+      });
+
+      const attemptedItems = itemStatsArray.filter(i => i.pct !== null);
+      if (attemptedItems.length > 0 && attemptedItems[0].pct < 100) {
+        document.getElementById('kpiWeakestItem').textContent =
+          `Weakest: Figure ${attemptedItems[0].id.toUpperCase()} (${attemptedItems[0].pct}%)`;
+      } else if (attemptedItems.length > 0) {
+        document.getElementById('kpiWeakestItem').textContent = 'All attempted figures at 100%';
+      } else {
+        document.getElementById('kpiWeakestItem').textContent = 'Focus area: --';
+      }
+
+      const itemStatsContainer = document.getElementById('itemStatsList');
+      itemStatsContainer.innerHTML = '';
+      itemStatsArray.forEach(stat => {
+        const hasData = stat.pct !== null;
+        const barColor = !hasData
+          ? 'bg-slate-700'
+          : stat.pct >= 80
+            ? 'bg-sky-400'
+            : stat.pct >= 50
+              ? 'bg-amber-400'
+              : 'bg-rose-500';
+        const row = document.createElement('div');
+        row.className = 'bg-slate-900 border border-slate-800 rounded-lg px-3 py-2';
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs mb-1">
+            <span class="mono font-bold text-slate-200">Figure ${stat.id.toUpperCase()} <span class="text-slate-500 font-normal">(${stat.fileName})</span></span>
+            <span class="mono text-xs ${hasData ? 'text-slate-300 font-semibold' : 'text-slate-500'}">
+              ${hasData ? `${stat.correct}/${stat.attempts} (${stat.pct}%)` : 'No data'}
+            </span>
+          </div>
+          <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+            <div class="${barColor} h-full rounded-full" style="width: ${hasData ? stat.pct : 0}%"></div>
+          </div>
+        `;
+        itemStatsContainer.appendChild(row);
+      });
+    }
+
+    /**
+     * Toggle Full Screen Mode safely
+     */
+    function toggleFullScreen() {
+      try {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {
+            showToast('Full screen request blocked by browser policy.');
+          });
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      } catch (e) {
+        showToast('Full screen mode is unavailable in this window.');
+      }
+    }
+
+    /**
+     * Handle missing image fallback cleanly by dynamically probing Figures/<letter>_<1..5>.(png|PNG)
+     * and updating correctAnswer automatically if renamed.
+     */
+    function handleImageError(imgEl) {
+      const currentItem = shuffledItems[currentIndex];
+      if (currentItem && !imgEl.dataset.probingAll) {
+        imgEl.dataset.probingAll = '1';
+        probeItemFromFolder(currentItem).then(found => {
+          if (found) {
+            imgEl.src = resolvedImageUrls[currentItem.id];
+          } else {
+            imgEl.classList.add('hidden');
+            const fallback = document.getElementById('imageErrorFallback');
+            const fileText = document.getElementById('imageErrorFilename');
+            if (fallback) fallback.classList.remove('hidden');
+            if (fileText) {
+              fileText.textContent = `Missing file: Figures/${currentItem.id}_<1-5>.png`;
+            }
+          }
+        });
+        return;
+      }
+
+      imgEl.classList.add('hidden');
+      const fallback = document.getElementById('imageErrorFallback');
+      const fileText = document.getElementById('imageErrorFilename');
+      if (fallback) fallback.classList.remove('hidden');
+      if (fileText && currentItem) {
+        fileText.textContent = `Missing file: Figures/${currentItem.fileName}`;
+      }
+    }
+
+    /**
+     * Start a new randomized time-trial session
+     */
+    function startTest() {
+      shuffledItems = shuffleArray(TEST_ITEMS);
+      currentIndex = 0;
+      userAnswers = new Array(shuffledItems.length).fill(null);
+      elapsedSeconds = 0;
+      startTimeMs = Date.now();
+
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('resultsScreen').classList.add('hidden');
+      document.getElementById('statsScreen').classList.add('hidden');
+      document.getElementById('headerStatsBtn').classList.add('hidden');
+      document.getElementById('testScreen').classList.remove('hidden');
+      document.getElementById('headerTestStats').classList.remove('hidden');
+      document.getElementById('timerDisplay').textContent = '00:00';
+
+      clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        elapsedSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
+        document.getElementById('timerDisplay').textContent = formatTime(elapsedSeconds);
+      }, 250);
+
+      renderCurrentScenario();
+    }
+
+    /**
+     * Render current figure image, answer boxes (1..5), and navigation indicators
+     */
+    function renderCurrentScenario() {
+      const item = shuffledItems[currentIndex];
+      if (!item) return;
+
+      document.getElementById('headerProgress').textContent = `${currentIndex + 1} / ${shuffledItems.length}`;
+
+      // Load Image (prioritize user-loaded Object URL, then resolved path, then Figures/<letter>_<answer>.png)
+      const imgEl = document.getElementById('scenarioImage');
+      const fallbackEl = document.getElementById('imageErrorFallback');
+      if (fallbackEl) fallbackEl.classList.add('hidden');
+      delete imgEl.dataset.probingAll;
+      imgEl.classList.remove('hidden');
+      imgEl.src = uploadedImageUrls[item.id] || resolvedImageUrls[item.id] || item.imageSrc;
+
+      // Render Answer Boxes 1 to 5
+      const boxesContainer = document.getElementById('answerBoxesContainer');
+      boxesContainer.innerHTML = '';
+      const selectedChoice = userAnswers[currentIndex];
+
+      for (let choice = 1; choice <= 5; choice++) {
+        const isSelected = selectedChoice === choice;
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => selectAnswer(choice);
+        btn.className = isSelected
+          ? 'w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-sky-500 text-slate-950 font-extrabold text-lg mono border-2 border-sky-300 shadow-lg shadow-sky-500/30 scale-105 transition cursor-pointer'
+          : 'w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-lg mono border border-slate-600 transition cursor-pointer';
+        btn.textContent = choice;
+        boxesContainer.appendChild(btn);
+      }
+
+      // Render Quick Navigation Dots
+      const dotsContainer = document.getElementById('questionDots');
+      dotsContainer.innerHTML = '';
+      shuffledItems.forEach((_, idx) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.onclick = () => {
+          currentIndex = idx;
+          renderCurrentScenario();
+        };
+        const isCurrent = idx === currentIndex;
+        const isAnswered = userAnswers[idx] !== null;
+        dot.className = isCurrent
+          ? 'w-6 h-6 rounded-md bg-sky-500 text-slate-950 font-extrabold text-xs mono border border-sky-300 cursor-pointer'
+          : isAnswered
+            ? 'w-6 h-6 rounded-md bg-emerald-500/25 text-emerald-300 font-bold text-xs mono border border-emerald-500/50 hover:bg-emerald-500/40 cursor-pointer'
+            : 'w-6 h-6 rounded-md bg-slate-800 text-slate-400 font-semibold text-xs mono border border-slate-700 hover:bg-slate-700 cursor-pointer';
+        dot.textContent = idx + 1;
+        dotsContainer.appendChild(dot);
+      });
+
+      document.getElementById('prevBtn').disabled = currentIndex === 0;
+      document.getElementById('nextBtn').disabled = currentIndex === shuffledItems.length - 1;
+    }
+
+    /**
+     * Select an answer choice (1..5) for the current figure
+     */
+    function selectAnswer(choice) {
+      userAnswers[currentIndex] = choice;
+      renderCurrentScenario();
+    }
+
+    function prevQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        renderCurrentScenario();
+      }
+    }
+
+    function nextQuestion() {
+      if (currentIndex < shuffledItems.length - 1) {
+        currentIndex++;
+        renderCurrentScenario();
+      }
+    }
+
+    /**
+     * Keyboard shortcuts (1-5 to select answer, ArrowLeft/ArrowRight to navigate)
+     */
+    window.addEventListener('keydown', (e) => {
+      if (document.getElementById('testScreen').classList.contains('hidden')) return;
+      if (!document.getElementById('confirmEndModal').classList.contains('hidden')) return;
+
+      if (['1', '2', '3', '4', '5'].includes(e.key)) {
+        e.preventDefault();
+        selectAnswer(parseInt(e.key, 10));
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        prevQuestion();
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        nextQuestion();
+      }
+    });
+
+    /**
+     * Prompt confirmation if unanswered items exist before finishing
+     */
+    function requestEndTest() {
+      const unansweredCount = userAnswers.filter(a => a === null).length;
+      if (unansweredCount > 0) {
+        document.getElementById('confirmEndText').textContent =
+          `You still have ${unansweredCount} unanswered figure${unansweredCount > 1 ? 's' : ''}. Unanswered items will be scored as incorrect. Do you want to submit now?`;
+        document.getElementById('confirmEndModal').classList.remove('hidden');
+      } else {
+        finishTest();
+      }
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmEndModal').classList.add('hidden');
+    }
+
+    /**
+     * Finalize test, stop stopwatch, calculate accuracy & record session
+     */
+    function finishTest() {
+      closeConfirmModal();
+      clearInterval(timerInterval);
+      elapsedSeconds = Math.floor((Date.now() - startTimeMs) / 1000);
+
+      let correctCount = 0;
+      const details = shuffledItems.map((item, idx) => {
+        const userChoice = userAnswers[idx];
+        const isCorrect = userChoice === item.correctAnswer;
+        if (isCorrect) correctCount++;
+        return {
+          order: idx + 1,
+          itemId: item.id,
+          fileName: item.fileName,
+          imageSrc: uploadedImageUrls[item.id] || resolvedImageUrls[item.id] || item.imageSrc,
+          userChoice: userChoice !== null ? userChoice : 'None',
+          correctChoice: item.correctAnswer,
+          isCorrect,
+          rationale: item.rationale
+        };
+      });
+
+      const accuracyPct = Number(((correctCount / shuffledItems.length) * 100).toFixed(1));
+      const formattedTotalTime = formatTime(elapsedSeconds);
+      const timestamp = new Date().toLocaleString('en-GB', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+
+      lastReportData = {
+        source: 'Completed Session Results',
+        timestamp,
+        accuracyPct,
+        correctCount,
+        totalItems: shuffledItems.length,
+        totalSeconds: elapsedSeconds,
+        formattedTotalTime,
+        details
+      };
+
+      recordSessionReport(lastReportData);
+      renderResultsScreen(lastReportData);
+    }
+
+    /**
+     * Populate the Results Screen UI from a report object (live or imported .TXT)
+     */
+    function renderResultsScreen(report) {
+      document.getElementById('startScreen').classList.add('hidden');
+      document.getElementById('testScreen').classList.add('hidden');
+      document.getElementById('statsScreen').classList.add('hidden');
+      document.getElementById('headerTestStats').classList.add('hidden');
+      document.getElementById('headerStatsBtn').classList.remove('hidden');
+      document.getElementById('resultsScreen').classList.remove('hidden');
+
+      const pctFormatted = Number(report.accuracyPct).toFixed(1);
+      document.getElementById('resultSourceBadge').textContent = report.source;
+      document.getElementById('resultTimestamp').textContent = `Recorded: ${report.timestamp}`;
+      document.getElementById('statAccuracy').textContent = `${pctFormatted}%`;
+      document.getElementById('statFraction').textContent = `${report.correctCount} out of ${report.totalItems} correct`;
+      document.getElementById('statTotalTime').textContent = report.formattedTotalTime;
+
+      const avgSec = report.totalItems > 0 ? (report.totalSeconds / report.totalItems).toFixed(1) : '0.0';
+      document.getElementById('statAvgTime').textContent = `Avg: ${avgSec}s per item`;
+
+      let rating = 'Needs Practice';
+      if (report.accuracyPct === 100 && report.totalSeconds <= 220) {
+        rating = 'Exceptional Logic';
+      } else if (report.accuracyPct >= 82) {
+        rating = 'Strong Performance';
+      } else if (report.accuracyPct >= 65) {
+        rating = 'Moderate Proficiency';
+      }
+      document.getElementById('statRating').textContent = rating;
+
+      const tbody = document.getElementById('resultsTableBody');
+      tbody.innerHTML = '';
+
+      if (!Array.isArray(report.details) || report.details.length === 0) {
+        const emptyRow = document.createElement('tr');
+        emptyRow.innerHTML = `<td colspan="7" class="py-6 px-4 text-center text-slate-400">Summary report imported (no individual figure breakdown available).</td>`;
+        tbody.appendChild(emptyRow);
+        return;
+      }
+
+      report.details.forEach(row => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition';
+        const label = row.fileName ? `${String(row.itemId).toUpperCase()} (${row.fileName})` : `Figure ${String(row.itemId).toUpperCase()}`;
+        tr.innerHTML = `
+          <td class="py-2.5 px-4 mono text-slate-400 font-semibold">${row.order}</td>
+          <td class="py-2.5 px-4">
+            <img src="${row.imageSrc}" alt="Figure ${row.itemId}" class="w-16 h-10 object-cover rounded border border-slate-700 bg-slate-800" onerror="this.style.display='none'" />
+          </td>
+          <td class="py-2.5 px-4 mono font-bold text-slate-200">${label}</td>
+          <td class="py-2.5 px-4 mono font-bold ${row.isCorrect ? 'text-emerald-400' : 'text-rose-400'}">${row.userChoice}</td>
+          <td class="py-2.5 px-4 mono font-bold text-sky-400">${row.correctChoice}</td>
+          <td class="py-2.5 px-4">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold ${row.isCorrect ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/15 text-rose-400 border border-rose-500/30'}">
+              ${row.isCorrect ? 'CORRECT' : 'INCORRECT'}
+            </span>
+          </td>
+          <td class="py-2.5 px-4 text-xs text-slate-300 leading-relaxed">${row.rationale}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /**
+     * Export all recorded test runs from sessionHistory to a clean minimal .TXT file
+     */
+    function exportAllHistoryTxt() {
+      if (!sessionHistory || sessionHistory.length === 0) {
+        showToast('No recorded runs available to export.');
+        return;
+      }
+
+      const lines = sessionHistory.map((run, idx) => {
+        const pctFormatted = Number(run.accuracyPct).toFixed(1);
+        return `Test ${idx + 1} | Accuracy: ${pctFormatted}% | Total Time: ${run.formattedTotalTime}`;
+      });
+
+      const blob = new Blob([lines.join('\n') + '\n'], { type: 'text/plain;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const safeStamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, '-');
+      a.href = url;
+      a.download = `Figures_All_Results_${safeStamp}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast(`Exported ${sessionHistory.length} test run${sessionHistory.length > 1 ? 's' : ''} to .TXT.`);
+    }
+
+    /**
+     * Import one or multiple minimal .TXT files
+     */
+    function handleImportTxt(event, stayOnStats = false) {
+      const files = Array.from(event.target.files || []);
+      if (files.length === 0) return;
+
+      let importedCount = 0;
+      let latestReport = null;
+
+      Promise.all(
+        files.map(file => file.text().then(text => ({ name: file.name, text })))
+      ).then(results => {
+        results.forEach(({ name, text }) => {
+          const lineRegex = /^(?:Test\s+(\d+)\s*\|\s*)?Accuracy:\s*(\d+(?:\.\d+)?)%\s*\|\s*Total Time:\s*(\d{2}):(\d{2})\s*$/gm;
+          let match;
+
+          while ((match = lineRegex.exec(text)) !== null) {
+            const testLabel = match[1] ? `Test ${match[1]}` : name;
+            const accuracyPct = Number(parseFloat(match[2]).toFixed(1));
+            const mins = parseInt(match[3], 10);
+            const secs = parseInt(match[4], 10);
+            const totalSeconds = mins * 60 + secs;
+            const formattedTotalTime = `${match[3]}:${match[4]}`;
+            const totalItems = TEST_ITEMS.length;
+            const correctCount = Math.round((accuracyPct / 100) * totalItems);
+
+            const report = {
+              source: `Imported (.TXT): ${testLabel}`,
+              timestamp: `${name} (${testLabel})`,
+              accuracyPct,
+              correctCount,
+              totalItems,
+              totalSeconds,
+              formattedTotalTime,
+              details: []
+            };
+
+            recordSessionReport(report);
+            latestReport = report;
+            importedCount++;
+          }
+        });
+
+        event.target.value = '';
+
+        if (importedCount > 0) {
+          showToast(`Imported ${importedCount} test result${importedCount > 1 ? 's' : ''} from .TXT.`);
+          if (stayOnStats || !document.getElementById('statsScreen').classList.contains('hidden')) {
+            renderStatisticsScreen();
+          } else if (latestReport) {
+            lastReportData = latestReport;
+            renderResultsScreen(latestReport);
+          }
+        } else {
+          showToast('No valid test lines found. Expected: Accuracy: XX.X% | Total Time: MM:SS');
+        }
+      });
+    }
+
+    // Initialize persisted history and auto-probe Figures/ folder on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPersistedHistory();
+      preloadDataFolderImages();
+    });
+  </script>
+</body>
+</html>
