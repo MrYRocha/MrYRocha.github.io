@@ -57,11 +57,11 @@
         header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 20px;
             flex-wrap: wrap;
-            gap: 12px;
+            gap: 14px;
         }
 
         .title-block h1 {
@@ -77,16 +77,35 @@
             margin-top: 6px;
         }
 
-        .badge {
-            background: rgba(59, 130, 246, 0.15);
-            border: 1px solid rgba(59, 130, 246, 0.4);
-            color: #60a5fa;
-            font-size: 0.78rem;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-control {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #475569;
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.84rem;
             font-weight: 600;
-            padding: 6px 12px;
-            border-radius: 999px;
-            letter-spacing: 0.4px;
-            text-transform: uppercase;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn-control:hover {
+            background: #283548;
+            border-color: #64748b;
+        }
+
+        .btn-control:active {
+            transform: scale(0.98);
         }
 
         .games-grid {
@@ -106,6 +125,7 @@
             flex-direction: column;
             justify-content: space-between;
             gap: 16px;
+            cursor: pointer;
             transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
         }
 
@@ -190,41 +210,6 @@
             color: #fca5a5;
         }
 
-        .info-box {
-            background: #020617;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 14px 18px;
-            font-size: 0.82rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-
-        .info-box strong {
-            color: #e2e8f0;
-        }
-
-        .btn-refresh {
-            background: #1e293b;
-            color: #e2e8f0;
-            border: 1px solid #334155;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.15s;
-        }
-
-        .btn-refresh:hover {
-            background: #334155;
-        }
-
         code {
             background: #1e293b;
             padding: 2px 6px;
@@ -232,27 +217,108 @@
             font-family: monospace;
             color: #38bdf8;
         }
+
+        /* Overlay de Jogo em Ecrã Inteiro com Botão de Saída para o Portal */
+        .game-player-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background-color: #020617;
+            display: none;
+            flex-direction: column;
+            width: 100vw;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .game-player-overlay.active {
+            display: flex;
+        }
+
+        .game-player-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            flex: 1;
+            background-color: #080c14;
+        }
+
+        .floating-portal-bar {
+            position: fixed;
+            top: max(10px, env(safe-area-inset-top));
+            right: max(14px, env(safe-area-inset-right));
+            z-index: 120;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-exit-portal {
+            background: rgba(15, 23, 42, 0.92);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #f8fafc;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 8px 14px;
+            border-radius: 9px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.55);
+            transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn-exit-portal:hover {
+            background: rgba(30, 41, 59, 0.98);
+            border-color: #60a5fa;
+            color: #93c5fd;
+        }
+
+        .btn-exit-portal:active {
+            transform: scale(0.97);
+        }
     </style>
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="portalContainer">
         <header>
             <div class="title-block">
                 <h1>Simuladores de Aptidão Psicotécnica</h1>
-                <p>Deteção automática de módulos e respetivas descrições no repositório</p>
+                <p>Seleciona um módulo de treino para iniciar</p>
             </div>
-            <span class="badge" id="repoBadge">Auto-Sync GitHub</span>
+            <div class="header-actions">
+                <button type="button" class="btn-control" onclick="loadGames(true)" title="Atualizar lista de simuladores">
+                    <span>↻</span>
+                    <span>Atualizar</span>
+                </button>
+                <button type="button" class="btn-control" id="portalFullscreenBtn" onclick="toggleFullScreen()" title="Alternar Ecrã Inteiro">
+                    <span id="fsIcon">⛶</span>
+                    <span id="fsLabel">Full Screen</span>
+                </button>
+            </div>
         </header>
 
         <div id="contentArea">
-            <div class="status-box">A procurar ficheiros <code>.html</code> no repositório...</div>
+            <div class="status-box">A carregar simuladores...</div>
         </div>
+    </div>
 
-        <div class="info-box">
-            <div><strong>Zero Manutenção:</strong> Basta fazer upload de qualquer ficheiro <code>.html</code> para este repositório. O portal lê automaticamente o <code>&lt;title&gt;</code> e a <code>&lt;meta name="description"&gt;</code>.</div>
-            <button class="btn-refresh" onclick="loadGames(true)">↻ Atualizar Lista</button>
+    <!-- Contentor do Jogo Ativo com Botão Flutuante para Regressar ao Portal -->
+    <div id="gamePlayerOverlay" class="game-player-overlay" aria-hidden="true">
+        <div class="floating-portal-bar">
+            <button type="button" class="btn-exit-portal" onclick="toggleFullScreen()" title="Alternar Ecrã Inteiro">
+                <span>⛶</span>
+                <span class="fs-overlay-label">Full Screen</span>
+            </button>
+            <button type="button" class="btn-exit-portal" onclick="exitGameToPortal()" title="Sair do jogo e voltar ao portal">
+                <span>← Portal</span>
+            </button>
         </div>
+        <iframe id="gameFrame" class="game-player-frame" src="about:blank" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -264,6 +330,51 @@
                 tag: 'PC & iPhone'
             }
         };
+
+        function toggleFullScreen() {
+            try {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    document.exitFullscreen().catch(() => {});
+                }
+            } catch (e) {}
+        }
+
+        document.addEventListener('fullscreenchange', () => {
+            const isFs = Boolean(document.fullscreenElement);
+            const fsLabel = document.getElementById('fsLabel');
+            if (fsLabel) {
+                fsLabel.textContent = isFs ? 'Sair Full Screen' : 'Full Screen';
+            }
+            document.querySelectorAll('.fs-overlay-label').forEach(el => {
+                el.textContent = isFs ? 'Sair Full Screen' : 'Full Screen';
+            });
+        });
+
+        function launchGame(href) {
+            const overlay = document.getElementById('gamePlayerOverlay');
+            const frame = document.getElementById('gameFrame');
+            frame.src = href;
+            overlay.classList.add('active');
+            overlay.setAttribute('aria-hidden', 'false');
+            document.body.style.overflow = 'hidden';
+
+            frame.onload = () => {
+                try {
+                    frame.contentWindow.focus();
+                } catch (e) {}
+            };
+        }
+
+        function exitGameToPortal() {
+            const overlay = document.getElementById('gamePlayerOverlay');
+            const frame = document.getElementById('gameFrame');
+            overlay.classList.remove('active');
+            overlay.setAttribute('aria-hidden', 'true');
+            frame.src = 'about:blank';
+            document.body.style.overflow = '';
+        }
 
         function detectRepoInfo() {
             const host = window.location.hostname;
@@ -301,7 +412,6 @@
                 const metaIcon = doc.querySelector('meta[name="game-icon"]');
                 const metaTag = doc.querySelector('meta[name="game-tag"]');
 
-                // Fallback secundário: lê o primeiro parágrafo das instruções se não houver <meta name="description">
                 let autoIntro = '';
                 const firstIntroP = doc.querySelector('.instructions-list p, #startOverlay p, .rules p');
                 if (firstIntroP && firstIntroP.textContent) {
@@ -334,19 +444,17 @@
 
         async function loadGames(bypassCache = false) {
             const contentArea = document.getElementById('contentArea');
-            const repoBadge = document.getElementById('repoBadge');
             const repoInfo = detectRepoInfo();
 
             if (!repoInfo) {
                 contentArea.innerHTML = `
                     <div class="status-box error">
-                        <strong>Modo Local Detetado:</strong> Este portal deteta automaticamente todos os jogos quando estiver alojado no GitHub Pages (<code>username.github.io</code>).
+                        <strong>Modo Local:</strong> Os simuladores ficam disponíveis automaticamente quando publicados online.
                     </div>`;
                 return;
             }
 
-            repoBadge.textContent = `${repoInfo.owner}/${repoInfo.repo}`;
-            contentArea.innerHTML = `<div class="status-box">A sincronizar jogos e descrições de <code>${repoInfo.repo}</code>...</div>`;
+            contentArea.innerHTML = `<div class="status-box">A carregar simuladores disponíveis...</div>`;
 
             try {
                 const apiUrl = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/` + (bypassCache ? `?t=${Date.now()}` : '');
@@ -365,8 +473,7 @@
                 if (htmlFiles.length === 0) {
                     contentArea.innerHTML = `
                         <div class="status-box">
-                            Nenhum jogo encontrado ainda.<br>
-                            Faz upload de qualquer ficheiro <code>.html</code> para a raiz do repositório <code>${repoInfo.repo}</code> e atualiza esta página.
+                            Nenhum simulador encontrado ainda.
                         </div>`;
                     return;
                 }
@@ -382,6 +489,10 @@
                     const card = document.createElement('a');
                     card.href = game.href;
                     card.className = 'game-card';
+                    card.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        launchGame(game.href);
+                    });
                     card.innerHTML = `
                         <div>
                             <div class="card-header">
@@ -407,8 +518,7 @@
             } catch (err) {
                 contentArea.innerHTML = `
                     <div class="status-box error">
-                        <strong>Não foi possível listar automaticamente o repositório:</strong> ${err.message}<br>
-                        Verifica se o repositório <code>${repoInfo.repo}</code> está definido como <strong>Público</strong> nas definições do GitHub.
+                        <strong>Não foi possível carregar a lista de simuladores:</strong> ${err.message}
                     </div>`;
             }
         }
