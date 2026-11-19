@@ -43,7 +43,7 @@
 
         .container {
             width: 100%;
-            max-width: 920px;
+            max-width: 960px;
             background-color: var(--panel-bg);
             border: 1px solid var(--border-color);
             border-radius: 16px;
@@ -91,7 +91,7 @@
 
         .games-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
             gap: 18px;
         }
 
@@ -155,9 +155,8 @@
 
         .card-body p {
             font-size: 0.85rem;
-            line-height: 1.5;
+            line-height: 1.55;
             color: var(--text-muted);
-            word-break: break-word;
         }
 
         .card-footer {
@@ -241,7 +240,7 @@
         <header>
             <div class="title-block">
                 <h1>Simuladores de Aptidão Psicotécnica</h1>
-                <p>Deteção automática de módulos disponíveis no repositório</p>
+                <p>Deteção automática de módulos e respetivas descrições no repositório</p>
             </div>
             <span class="badge" id="repoBadge">Auto-Sync GitHub</span>
         </header>
@@ -251,37 +250,27 @@
         </div>
 
         <div class="info-box">
-            <div><strong>Zero Manutenção:</strong> Basta fazer upload de qualquer novo ficheiro <code>.html</code> para este repositório e ele aparecerá aqui automaticamente.</div>
+            <div><strong>Zero Manutenção:</strong> Basta fazer upload de qualquer ficheiro <code>.html</code> para este repositório. O portal lê automaticamente o <code>&lt;title&gt;</code> e a <code>&lt;meta name="description"&gt;</code>.</div>
             <button class="btn-refresh" onclick="loadGames(true)">↻ Atualizar Lista</button>
         </div>
     </div>
 
     <script>
-        // Metadados opcionais para ficheiros conhecidos (todos os novos ficheiros .html funcionam automaticamente sem estarem aqui)
-        const KNOWN_GAMES = {
-            'PedaisEPista.html': {
+        const FALLBACK_METADATA = {
+            'PistaEPedais.html': {
                 title: 'Pista e Pedais',
                 desc: 'Controlo de inibição e resposta rápida com os pedais (W / P) consoante o alinhamento da pista e barras transversais.',
                 icon: '🛬',
                 tag: 'PC & iPhone'
-            },
-            'Coordenacao_Parametros_Voo.html': {
-                title: 'Coordenação de Parâmetros de Voo',
-                desc: 'Multi-tasking simultâneo: acompanhamento de caixas F1–F8, rumo, velocidade, altitude PFD, bank angle e combustível.',
-                icon: '🎛️',
-                tag: 'Desktop / Teclado'
             }
         };
 
-        // Deduz automaticamente o utilizador e o repositório a partir do URL (ex: miguel.github.io ou miguel.github.io/repo)
         function detectRepoInfo() {
-            const host = window.location.hostname; // ex: "username.github.io"
+            const host = window.location.hostname;
             const pathParts = window.location.pathname.split('/').filter(Boolean);
 
             if (host.endsWith('.github.io')) {
                 const owner = host.replace('.github.io', '');
-                // Se estiver na raiz de username.github.io, o repositório chama-se "username.github.io"
-                // Se estiver numa subpasta (ex: username.github.io/testes/), o repositório chama-se "testes"
                 const isProjectPage = pathParts.length > 0 && !pathParts[0].endsWith('.html');
                 const repo = isProjectPage ? pathParts[0] : host;
                 return { owner, repo };
@@ -289,7 +278,6 @@
             return null;
         }
 
-        // Converte nomes de ficheiros como "Teste_Memoria_Visual.html" em "Teste Memoria Visual"
         function formatFileName(filename) {
             return filename
                 .replace(/\.html$/i, '')
@@ -299,16 +287,48 @@
                 .trim();
         }
 
-        // Tenta ler o <title> real de dentro do ficheiro HTML para dar um nome ainda mais limpo ao cartão
-        async function fetchHtmlTitle(filename) {
+        async function parseGameMetadata(filename, idx) {
+            const fallback = FALLBACK_METADATA[filename] || {};
             try {
                 const res = await fetch(filename);
-                if (!res.ok) return null;
-                const text = await res.text();
-                const match = text.match(/<title[^>]*>([^<]+)<\/title>/i);
-                return match && match[1] ? match[1].trim() : null;
+                if (!res.ok) throw new Error('Fetch falhou');
+                const htmlText = await res.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+
+                const titleEl = doc.querySelector('title');
+                const metaDesc = doc.querySelector('meta[name="description"]');
+                const metaIcon = doc.querySelector('meta[name="game-icon"]');
+                const metaTag = doc.querySelector('meta[name="game-tag"]');
+
+                // Fallback secundário: lê o primeiro parágrafo das instruções se não houver <meta name="description">
+                let autoIntro = '';
+                const firstIntroP = doc.querySelector('.instructions-list p, #startOverlay p, .rules p');
+                if (firstIntroP && firstIntroP.textContent) {
+                    autoIntro = firstIntroP.textContent.trim();
+                }
+
+                const title = (titleEl && titleEl.textContent.trim()) || fallback.title || formatFileName(filename);
+                const desc = (metaDesc && metaDesc.getAttribute('content') && metaDesc.getAttribute('content').trim())
+                    || fallback.desc
+                    || autoIntro
+                    || `Simulador interativo (${filename}).`;
+                const icon = (metaIcon && metaIcon.getAttribute('content') && metaIcon.getAttribute('content').trim())
+                    || fallback.icon
+                    || '✈️';
+                const tag = (metaTag && metaTag.getAttribute('content') && metaTag.getAttribute('content').trim())
+                    || fallback.tag
+                    || `Módulo ${idx + 1}`;
+
+                return { href: filename, title, desc, icon, tag };
             } catch {
-                return null;
+                return {
+                    href: filename,
+                    title: fallback.title || formatFileName(filename),
+                    desc: fallback.desc || `Ficheiro: ${filename}`,
+                    icon: fallback.icon || '✈️',
+                    tag: fallback.tag || `Módulo ${idx + 1}`
+                };
             }
         }
 
@@ -320,13 +340,13 @@
             if (!repoInfo) {
                 contentArea.innerHTML = `
                     <div class="status-box error">
-                        <strong>Modo Local Detetado:</strong> Este ficheiro deteta automaticamente os jogos quando estiver alojado no GitHub Pages (<code>username.github.io</code>).
+                        <strong>Modo Local Detetado:</strong> Este portal deteta automaticamente todos os jogos quando estiver alojado no GitHub Pages (<code>username.github.io</code>).
                     </div>`;
                 return;
             }
 
             repoBadge.textContent = `${repoInfo.owner}/${repoInfo.repo}`;
-            contentArea.innerHTML = `<div class="status-box">A sincronizar jogos de <code>${repoInfo.repo}</code>...</div>`;
+            contentArea.innerHTML = `<div class="status-box">A sincronizar jogos e descrições de <code>${repoInfo.repo}</code>...</div>`;
 
             try {
                 const apiUrl = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/contents/` + (bypassCache ? `?t=${Date.now()}` : '');
@@ -338,7 +358,6 @@
 
                 const files = await response.json();
 
-                // Filtra apenas ficheiros .html na raiz, excluindo o próprio index.html e páginas 404.html
                 const htmlFiles = files
                     .filter(f => f.type === 'file' && /\.html$/i.test(f.name) && f.name.toLowerCase() !== 'index.html' && f.name.toLowerCase() !== '404.html')
                     .sort((a, b) => a.name.localeCompare(b.name));
@@ -352,28 +371,9 @@
                     return;
                 }
 
-                // Obtém os títulos reais de cada ficheiro HTML em paralelo
-                const cardsData = await Promise.all(htmlFiles.map(async (file, idx) => {
-                    const known = KNOWN_GAMES[file.name];
-                    if (known) {
-                        return {
-                            href: file.name,
-                            title: known.title,
-                            desc: known.desc,
-                            icon: known.icon,
-                            tag: known.tag
-                        };
-                    }
-
-                    const extractedTitle = await fetchHtmlTitle(file.name);
-                    return {
-                        href: file.name,
-                        title: extractedTitle || formatFileName(file.name),
-                        desc: `Ficheiro: ${file.name}`,
-                        icon: '✈️',
-                        tag: `Módulo ${idx + 1}`
-                    };
-                }));
+                const cardsData = await Promise.all(
+                    htmlFiles.map((file, idx) => parseGameMetadata(file.name, idx))
+                );
 
                 const grid = document.createElement('div');
                 grid.className = 'games-grid';
